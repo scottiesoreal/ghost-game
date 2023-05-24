@@ -4,61 +4,53 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private float movementSpeed = 5f;
-    [SerializeField] private float rotationSpeed = 10f;
-    [SerializeField] private float ascentSpeed = 5f;
-    [SerializeField] private float descentSpeed = 5f;
-    
-    [SerializeField] private bool isGravityEnabled = true;
+    [SerializeField] private float speed = 5f;
+    private Rigidbody playerRigidbody;
+    [SerializeField] private bool isAscending = false;
+    [SerializeField] private bool isDescending = false;
 
-    private Rigidbody rb;
-
-    private string horizontalAxis = "Horizontal";
-    private string verticalAxis = "Vertical";
-    private string ascendButton = "Ascend";
-    private string descendButton = "Descend";
-
-    private bool isUsingGamepad = false;
-
-    private void Awake()
+    void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        playerRigidbody = GetComponent<Rigidbody>();
     }
 
-    private void Update()
+    void Update()
     {
-        // Check if gamepad is connected
-        isUsingGamepad = Input.GetJoystickNames().Length > 0;
-
-        // Movement
-        float horizontalInput = Input.GetAxis(horizontalAxis);
-        float verticalInput = Input.GetAxis(verticalAxis);
-
-        Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput) * movementSpeed;
-        rb.velocity = movement;
-
-        // Rotation
-        if (movement != Vector3.zero)
+        // Check for ascent input
+        if (Input.GetKeyDown(KeyCode.V))
         {
-            Quaternion toRotation = Quaternion.LookRotation(movement);
-            rb.rotation = Quaternion.Slerp(rb.rotation, toRotation, rotationSpeed * Time.deltaTime);
+            isAscending = true;
+            playerRigidbody.useGravity = false; // Disable gravity
+        }
+        else if (Input.GetKeyUp(KeyCode.V))
+        {
+            isAscending = false;
         }
 
-        // Ascend and Descend
-        float ascendInput = Input.GetAxis("Ascend");
-        float descendInput = Input.GetAxis("Descend");
+        // Check for descent input
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            isDescending = true;
+        }
+        else if (Input.GetKeyUp(KeyCode.C))
+        {
+            isDescending = false;
+        }
+               
+    }
 
-        if (ascendInput > 0)
-        {
-            Debug.Log("Ascend");
-            Vector3 ascent = Vector3.up * ascendInput * ascentSpeed;
-            rb.velocity += ascent;
-        }
-        else if (descendInput > 0)
-        {
-            Debug.Log("Descend");
-            Vector3 descent = Vector3.down * descendInput * descentSpeed;
-            rb.velocity += descent;
-        }
+void FixedUpdate()
+    {
+        // Get input axes
+        float moveHorizontal = Input.GetAxis("Horizontal");
+        float moveVertical = Input.GetAxis("Vertical");
+        float moveY = isAscending ? 0.5f : (isDescending ? -0.5f : 0f);
+
+        // Calculate movement vector
+        Vector3 movement = new Vector3(moveHorizontal, moveY, moveVertical);
+        movement = transform.TransformDirection(movement) * speed * Time.deltaTime;
+
+        // Apply movement to the player
+        playerRigidbody.MovePosition(transform.position + movement);
     }
 }
