@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private float speed = 5f;
+    [SerializeField] 
+    private float speed = 5f;
     private Rigidbody playerRigidbody;
-    [SerializeField] private bool isAscending = false;
-    [SerializeField] private bool isDescending = false;
+    [SerializeField] 
+    private bool isAscending = false;
+    [SerializeField] 
+    private bool isDescending = false;
 
     void Start()
     {
@@ -16,6 +19,8 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        CalculateMovement();
+        
         // Check for ascent input
         if (Input.GetKeyDown(KeyCode.V))
         {
@@ -36,10 +41,11 @@ public class Player : MonoBehaviour
         {
             isDescending = false;
         }
-               
+
+              
     }
 
-void FixedUpdate()
+    void CalculateMovement()
     {
         // Get input axes
         float moveHorizontal = Input.GetAxis("Horizontal");
@@ -51,6 +57,12 @@ void FixedUpdate()
         movement = transform.TransformDirection(movement) * speed * Time.deltaTime;
 
         // Apply movement to the player
-        playerRigidbody.MovePosition(transform.position + movement);
+        MovePlayer(movement);
+    }
+
+    private void MovePlayer(Vector3 movement)
+    {
+        // Apply movement to the player
+        transform.position += movement;
     }
 }
